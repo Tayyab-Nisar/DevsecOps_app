@@ -15,9 +15,7 @@ env:
 
 jobs:
 
-# ======================
 # CI STAGE
-# ======================
 
   ci:
     runs-on: ubuntu-latest
@@ -50,7 +48,6 @@ jobs:
             --format "HTML" \
             --out /report \
             --failOnCVSS 7 \
-            --nvdApiKey ${{ secrets.NVD_API_KEY }} \
             --disableYarnAudit \
             --disableNodeAudit \
             --enableRetired false
@@ -114,9 +111,7 @@ jobs:
         run: |
           docker push $ACR_LOGIN_SERVER/$IMAGE_NAME_Front:${{ github.sha }}
 
-# ======================
 # CD STAGE
-# ======================
 
   cd:
     needs: ci
