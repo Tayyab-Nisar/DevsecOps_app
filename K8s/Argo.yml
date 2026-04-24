@@ -10,7 +10,7 @@ spec:
     repoURL: https://github.com/Tayyab-Nisar/DevsecOps_app
     targetRevision: main
     path: k8s
-
+    
   destination:
     server: https://kubernetes.default.svc
     namespace: default
