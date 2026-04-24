@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: devopsapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: myacr69984123.azurecr.io/backend:a84b0ba07327b254da5dd0a23adf48d4a2ba96f3
+          resources:
+            limits:
+              cpu: "1"
+            requests:
+              cpu: "500m"
+          ports:
+            - containerPort: 5000
