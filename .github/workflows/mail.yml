@@ -48,7 +48,6 @@ jobs:
             --format "HTML" \
             --out /report \
             --failOnCVSS 7 \
-            --nvdApiKey ${{ secrets.NVD_API_KEY }} \
             --disableYarnAudit \
             --disableNodeAudit \
             --enableRetired false
