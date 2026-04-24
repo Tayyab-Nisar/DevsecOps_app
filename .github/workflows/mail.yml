@@ -6,7 +6,7 @@ permissions:
 on:
   push:
     branches:
-      - staging
+      - main
 
 env:
   IMAGE_NAME_Back: backend
@@ -15,9 +15,9 @@ env:
 
 jobs:
 
-
+# ======================
 # CI STAGE
-
+# ======================
 
   ci:
     runs-on: ubuntu-latest
@@ -26,7 +26,6 @@ jobs:
 
       - name: Checkout Code
         uses: actions/checkout@v4
-
 
       - name: Azure Login
         uses: azure/login@v2
@@ -37,22 +36,24 @@ jobs:
         run: |
           az acr login --name ${{ secrets.ACR_NAME }}
 
-
 # OWASP DEPENDENCY CHECK
-
 
       - name: OWASP Dependency Check
         run: |
           mkdir -p reports
 
           docker run --rm \
-            -v $(pwd):/src \
-            -v $(pwd)/reports:/report \
+            -v ${{ github.workspace }}:/src \
+            -v ${{ github.workspace }}/reports:/report \
             owasp/dependency-check:latest \
-            --scan /src \
+            --scan /src/backend /src/frontend \
             --format "HTML" \
             --out /report \
-            --failOnCVSS 7
+            --failOnCVSS 7 \
+            --nvdApiKey ${{ secrets.NVD_API_KEY }} \
+            --disableYarnAudit \
+            --disableNodeAudit \
+            --enableRetired false
 
       - name: Upload Dependency Report
         uses: actions/upload-artifact@v4
@@ -60,9 +61,7 @@ jobs:
           name: dependency-check-report
           path: reports/
 
-
 # BUILD IMAGES
-
 
       - name: Build Backend Image
         run: |
@@ -77,14 +76,12 @@ jobs:
             --build-arg REACT_APP_API_URL=http://backend-service:5000 \
             -t $ACR_LOGIN_SERVER/$IMAGE_NAME_Front:${{ github.sha }} .
 
-
-# TRIVY SCAN (FIXED)
-
+# TRIVY SCAN
 
       - name: Scan Backend Image (Trivy)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME_Back }}:${{ github.sha }}
+          image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME_Back }}:${{ github.sha }}
           severity: CRITICAL,HIGH
           format: 'json'
           output: 'trivy-backend-report.json'
@@ -93,7 +90,7 @@ jobs:
       - name: Scan Frontend Image (Trivy)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME_Front }}:${{ github.sha }}
+          image-ref: ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME_Front }}:${{ github.sha }}
           severity: CRITICAL,HIGH
           format: 'json'
           output: 'trivy-frontend-report.json'
@@ -107,9 +104,7 @@ jobs:
             trivy-backend-report.json
             trivy-frontend-report.json
 
-
 # PUSH IMAGES
-
 
       - name: Push Backend Image
         run: |
@@ -119,26 +114,33 @@ jobs:
         run: |
           docker push $ACR_LOGIN_SERVER/$IMAGE_NAME_Front:${{ github.sha }}
 
-
+# ======================
 # CD STAGE
-
+# ======================
 
   cd:
     needs: ci
     runs-on: ubuntu-latest
 
+    env:
+      ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+      IMAGE_NAME_Back: backend
+      IMAGE_NAME_Front: frontend
+
     steps:
 
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          ref: gitops
 
       - name: Update Backend values.yaml
         run: |
-          sed -i "s|appimage: .*|appimage: $ACR_LOGIN_SERVER/$IMAGE_NAME_Back:${{ github.sha }}|g" helm-charts/values/backend-values.yml
+          sed -i "s|appimage: .*|appimage: $ACR_LOGIN_SERVER/$IMAGE_NAME_Back:${{ github.sha }}|g" charts/values/backend-values.yml
 
       - name: Update Frontend values.yaml
         run: |
-          sed -i "s|appimage: .*|appimage: $ACR_LOGIN_SERVER/$IMAGE_NAME_Front:${{ github.sha }}|g" helm-charts/values/frontend-values.yml
+          sed -i "s|appimage: .*|appimage: $ACR_LOGIN_SERVER/$IMAGE_NAME_Front:${{ github.sha }}|g" charts/values/frontend-values.yml
 
       - name: Setup Git authentication
         run: |
@@ -149,6 +151,9 @@ jobs:
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
 
-          git add helm-charts/values/
-          git commit -m "Update image tag ${{ github.sha }} [skip ci]" || echo "No changes"
-          git push
+          git add charts/values/
+
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+
+          git commit -m "Update image tag ${{ github.sha }} [skip ci]"
+          git push origin gitops
