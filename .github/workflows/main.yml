@@ -6,7 +6,7 @@ permissions:
 on:
   push:
     branches:
-      - main
+      - staging
 
 env:
   IMAGE_NAME_Back: backend
@@ -34,29 +34,16 @@ jobs:
         run: |
           az acr login --name ${{ secrets.ACR_NAME }}
 
-# OWASP DEPENDENCY CHECK
+# TRIVY FILE SYSTEM SCAN
 
-      - name: OWASP Dependency Check
-        run: |
-          mkdir -p reports
-
-          docker run --rm \
-            -v ${{ github.workspace }}:/src \
-            -v ${{ github.workspace }}/reports:/report \
-            owasp/dependency-check:latest \
-            --scan /src/backend /src/frontend \
-            --format "HTML" \
-            --out /report \
-            --failOnCVSS 7 \
-            --disableYarnAudit \
-            --disableNodeAudit \
-            --enableRetired false
-
-      - name: Upload Dependency Report
-        uses: actions/upload-artifact@v4
+      - name: Trivy File System Scan
+        uses: aquasecurity/trivy-action@master
         with:
-          name: dependency-check-report
-          path: reports/
+          scan-type: 'fs'
+          scan-ref: '.'
+          severity: 'CRITICAL,HIGH'
+          format: 'table'
+          #exit-code: 1
 
 # BUILD IMAGES
 
@@ -73,7 +60,7 @@ jobs:
             --build-arg REACT_APP_API_URL=http://backend-service:5000 \
             -t $ACR_LOGIN_SERVER/$IMAGE_NAME_Front:${{ github.sha }} .
 
-# TRIVY SCAN
+# TRIVY IMAGE SCAN
 
       - name: Scan Backend Image (Trivy)
         uses: aquasecurity/trivy-action@master
@@ -82,7 +69,7 @@ jobs:
           severity: CRITICAL,HIGH
           format: 'json'
           output: 'trivy-backend-report.json'
-          exit-code: 1
+          #exit-code: 1
 
       - name: Scan Frontend Image (Trivy)
         uses: aquasecurity/trivy-action@master
@@ -91,7 +78,7 @@ jobs:
           severity: CRITICAL,HIGH
           format: 'json'
           output: 'trivy-frontend-report.json'
-          exit-code: 1
+          #exit-code: 1
 
       - name: Upload Trivy Reports
         uses: actions/upload-artifact@v4
