@@ -1,0 +1,14 @@
+stages:
+  - install
+  - scan
+
+install:
+  stage: install
+  script:
+    - cd backend && npm install
+    - cd ../frontend && npm install
+
+security_scan:
+  stage: scan
+  script:
+    - cd backend && npm audit --audit-level=high
