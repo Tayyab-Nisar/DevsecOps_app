@@ -1,4 +1,4 @@
-appname: backendend
+appname: backend
 appnamespace: devopsapp
 replica: 2
 appsvctyp: ClusterIP
