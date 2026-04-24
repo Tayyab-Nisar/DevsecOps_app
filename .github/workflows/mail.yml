@@ -5,8 +5,8 @@ permissions:
 
 on:
   push:
-    branches:
-      - staging
+    branches: 
+      - main
 
 env:
   IMAGE_NAME_Back: backend
@@ -134,11 +134,11 @@ jobs:
 
       - name: Update Backend values.yaml
         run: |
-          sed -i "s|appimage: .*|appimage: $ACR_LOGIN_SERVER/$IMAGE_NAME_Back:${{ github.sha }}|g" helm-charts/values/backend-values.yml
+          sed -i "s|appimage: .*|appimage: $ACR_LOGIN_SERVER/$IMAGE_NAME_Back:${{ github.sha }}|g" charts/values/backend-values.yml
 
       - name: Update Frontend values.yaml
         run: |
-          sed -i "s|appimage: .*|appimage: $ACR_LOGIN_SERVER/$IMAGE_NAME_Front:${{ github.sha }}|g" helm-charts/values/frontend-values.yml
+          sed -i "s|appimage: .*|appimage: $ACR_LOGIN_SERVER/$IMAGE_NAME_Front:${{ github.sha }}|g" charts/values/frontend-values.yml
 
       - name: Setup Git authentication
         run: |
