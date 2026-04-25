@@ -28,7 +28,7 @@ API Connection
 
 Frontend connects to backend via:
 
-localhost:5000/api
+localhost:5000/api/hello
 
 2 Docker Run (Optional) if you want to run through dokcer compose
 Backend
@@ -41,6 +41,13 @@ docker run -p 3000:3000 frontend
 3 Kubernetes Access (AKS)
 i have used azure kubernated and it is provision through terraform
 i ahve use helm to deploy backend and front end and ingress 
+
+to insatll the helm charts of backend, frontend and  ingress you can use the below command
+
+helm install frontend .\devopsapp -f .\frontend-values.yml
+helm install backend .\devopsapp -f .\backend-values.yml
+helm install ingress .\devopsapp -f .\ingress-values.yml
+
 Ports Used is kubernates are below:
 Service	Port
 Frontend	80
@@ -75,6 +82,12 @@ ACR_NAME
 GITHUB_TOKEN
 
 5 Argo CD Access
+you can deply argo cd from K8s/argocd.yml you can run it with below commad
+
+" kubectl apply -f argocd.yml "
+
+" kubectl get applications -n argocd "
+
 UI Access
 you can access the argo cd by using below command
 "kubectl port-forward svc/argocd-server -n argocd 8080:443"
