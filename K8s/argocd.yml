@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: devopsapp
+  namespace: argocd
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/Tayyab-Nisar/DevsecOps_app
+    targetRevision: gitops
+    path: charts/devopsapp
+
+    helm:
+      valueFiles:
+        - ../values/backend-values.yml
+        - ../values/frontend-values.yml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: devopsapp
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
