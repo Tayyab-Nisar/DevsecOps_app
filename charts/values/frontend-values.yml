@@ -2,6 +2,6 @@ appname: frontend
 appnamespace: devopsapp
 replica: 2
 appsvctyp: ClusterIP
-appimage: myacr69984123.azurecr.io/frontend:7b2e1e413786bad9bfef1946eaf5f54922b6876b
+appimage: myacr69984123.azurecr.io/frontend:0cb88f9c62886b7eebcee385b7be6869276cb3ad
 Containerport: 80
 Serviceport: 8080
