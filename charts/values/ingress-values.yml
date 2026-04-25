@@ -1,0 +1,5 @@
+service:
+  backend: backend
+  frontend: frontend
+  backendPort: 5000
+  frontendPort: 80
