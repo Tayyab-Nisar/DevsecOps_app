@@ -1,12 +1,15 @@
+{{- range .Values.apps }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{.Values.appname}}
-  namespace: {{.Values.appnamespace}}
+  name: {{.name}}
+  namespace: {{$.Values.namespace}}
 spec:
   selector:
-    app: {{.Values.appname}}
+    app: {{.name}}
   ports:
-    - port: {{.Values.Containerport}}
-      targetPort: {{.Values.Serviceport}}
-  type: {{.Values.appsvctyp}}
+    - port: {{.port}}
+      targetPort: {{.Serviceport}}
+  type: {{.Serviceporttyp}}
+---
+{{- end }}

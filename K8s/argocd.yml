@@ -8,13 +8,12 @@ spec:
 
   source:
     repoURL: https://github.com/Tayyab-Nisar/DevsecOps_app
-    targetRevision: gitops
+    targetRevision: test
     path: charts/devopsapp
 
     helm:
       valueFiles:
-        - ../values/backend-values.yml
-        - ../values/frontend-values.yml
+        - values.yml
 
   destination:
     server: https://kubernetes.default.svc
