@@ -2,6 +2,6 @@ appname: backend
 appnamespace: devopsapp
 replica: 2
 appsvctyp: ClusterIP
-appimage: myacr69984123.azurecr.io/backend:9115bd605b8e45d2a4ec05876f27a2de13d09c90
+appimage: myacr69984123.azurecr.io/backend:313fa4281dfa54a40e34dad2428d961ceac7b560
 Containerport: 5000
 Serviceport: 5000
