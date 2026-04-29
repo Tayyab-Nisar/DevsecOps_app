@@ -6,7 +6,7 @@ permissions:
 on:
   push:
     branches:
-      - main
+      - test
 
 env:
   IMAGE_NAME_Back: backend
